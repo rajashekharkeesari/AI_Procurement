@@ -16,7 +16,7 @@ from Backend.routes.workflow_routes import router as workflowrouter
 from Backend.routes.data_routes import router as datarouter
 
 PORT = int(dotenv.get_key(".env", "PORT") or 8000)
-# Bind to all interfaces so the nginx container / EC2 can reach the API.
+# Bind to all interfaces so Docker / EC2 can reach the app.
 # (Backend_url in .env is a public URL, not a bind address.)
 host = dotenv.get_key(".env", "HOST") or "0.0.0.0"
 
