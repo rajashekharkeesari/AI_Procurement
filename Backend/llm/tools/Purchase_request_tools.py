@@ -92,12 +92,24 @@ def create_new_purchase_request(
     item_quantity: int,
     item_id: int,
     item_cost: float,
+    employee_id: int,
+    department_id: int,
+    status: str = "pending",
 ) -> dict:
     """
     Create a new purchase request.
 
     Use this tool only when the user explicitly asks
     to create a purchase request.
+
+    Parameters:
+    - item_name: name of the item
+    - item_quantity: quantity requested
+    - item_id: stationary item ID
+    - item_cost: total cost of the request
+    - employee_id: ID of the requesting employee
+    - department_id: ID of the employee's department
+    - status: request status (default: pending)
     """
 
     db = SessionLocal()
@@ -108,6 +120,9 @@ def create_new_purchase_request(
             item_quantity=item_quantity,
             item_id=item_id,
             item_cost=item_cost,
+            employee_id=employee_id,
+            department_id=department_id,
+            status=status,
         )
 
         created_request = create_purchase_request(
@@ -134,7 +149,7 @@ def update_existing_purchase_request(
     item_cost: float,
 ) -> dict:
     """
-    Update an existing purchase request.
+    Update an existing purchase request's item details.
 
     Use this tool only when the user explicitly requests
     updating a purchase request.
@@ -143,22 +158,20 @@ def update_existing_purchase_request(
     db = SessionLocal()
 
     try:
-        updated_request = PurchaseRequest(
-            item_name=item_name,
-            item_quantity=item_quantity,
-            item_id=item_id,
-            item_cost=item_cost,
-        )
+        existing = get_purchase_request_by_id(db=db, purchase_request_id=purchase_request_id)
+        if not existing:
+            return {"success": False, "message": "Purchase request not found"}
 
-        purchase_request = update_purchase_request(
-            db=db,
-            purchase_request_id=purchase_request_id,
-            updated_purchase_request=updated_request,
-        )
+        existing.item_name = item_name
+        existing.item_quantity = item_quantity
+        existing.item_id = item_id
+        existing.item_cost = item_cost
+        db.commit()
+        db.refresh(existing)
 
         return {
             "success": True,
-            "purchase_request_id": purchase_request.id,
+            "purchase_request_id": existing.id,
             "message": "Purchase request updated successfully.",
         }
 

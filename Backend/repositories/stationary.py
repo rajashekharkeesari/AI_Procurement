@@ -42,9 +42,29 @@ def delete_stationary(db, stationary_id):
             db.commit()
             return {"message": "Stationary item deleted successfully"}
         else:
-            return http.HTTPException(status_code=404, detail="Stationary item not found")
+            return None
     except Exception as e:
         db.rollback()
         raise e
-        return http.HTTPException(status_code=404, detail="Stationary item not found")
+
+
+def deduct_stationary_stock(db, stationary_id, quantity):
+    """Deduct quantity from stationary stock after an order is approved."""
+    stationary = get_stationary_by_id(db, stationary_id)
+    if not stationary:
+        return None
+    if stationary.quantity < quantity:
+        return {"error": "Insufficient stock", "available": stationary.quantity}
+    stationary.quantity -= quantity
+    db.commit()
+    db.refresh(stationary)
+    return {"success": True, "remaining_stock": stationary.quantity}
+
+
+def get_stationary_by_name(db, name: str):
+    """Find stationary item by name (case-insensitive partial match)."""
+    item = db.query(Stationary).filter(Stationary.name.ilike(f"%{name}%")).first()
+    if item:
+        return {"id": item.id, "name": item.name, "cost": float(item.cost), "quantity": item.quantity}
+    return None
 

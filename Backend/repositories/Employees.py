@@ -9,13 +9,6 @@ this module contains functions to manage employees and provides access to employ
 def get_employee_by_id(db, employee_id: int) -> dict:
     """
     Retrieve an employee by their ID.
-
-    Args:
-        employee_id (int): The ID of the employee to retrieve.
-        db: The database session.
-
-    Returns:
-        dict: A dictionary containing the employee's details, or None if not found.
     """
     employee = db.query(Employees).filter(Employees.id == employee_id).first()
     if employee:
@@ -24,7 +17,7 @@ def get_employee_by_id(db, employee_id: int) -> dict:
             "name": employee.name,
             "department_id": employee.department_id
         }
-    return http.HTTPException(status_code=404, detail="Employee not found")
+    return None
 
 def get_all_employees(db) -> list:
     """
@@ -60,7 +53,7 @@ def get_employee_department_id(db, employee_id):
     employee = db.query(Employees).filter(Employees.id == employee_id).first()
     if employee:
         return employee.department_id
-    return http.HTTPException(status_code=404, detail="Employee not found") 
+    return None 
 
 
 def get_employee_name(db, employee_id):
@@ -77,5 +70,28 @@ def get_employee_name(db, employee_id):
     employee = db.query(Employees).filter(Employees.id == employee_id).first()
     if employee:
         return employee.name
-    return http.HTTPException(status_code=404, detail="Employee not found")
+    return None
+
+
+def get_employee_by_name(db, employee_name: str):
+    """
+    Retrieve an employee by their name (case-insensitive partial match).
+
+    Args:
+        db: The database session.
+        employee_name (str): The name to search for.
+
+    Returns:
+        dict or None
+    """
+    employee = db.query(Employees).filter(
+        Employees.name.ilike(f"%{employee_name}%")
+    ).first()
+    if employee:
+        return {
+            "id": employee.id,
+            "name": employee.name,
+            "department_id": employee.department_id,
+        }
+    return None
 

@@ -92,12 +92,24 @@ def create_new_purchase_order(
     item_quantity: int,
     item_id: int,
     item_cost: float,
+    employee_id: int,
+    department_id: int,
+    status: str = "pending",
 ) -> dict:
     """
     Create a new purchase order.
 
     Use this tool only when the user explicitly asks
     to create a purchase order.
+
+    Parameters:
+    - item_name: name of the item
+    - item_quantity: quantity ordered
+    - item_id: stationary item ID
+    - item_cost: total cost of the order
+    - employee_id: ID of the requesting employee
+    - department_id: ID of the employee's department
+    - status: order status (default: pending)
     """
 
     db = SessionLocal()
@@ -108,6 +120,9 @@ def create_new_purchase_order(
             item_quantity=item_quantity,
             item_id=item_id,
             item_cost=item_cost,
+            employee_id=employee_id,
+            department_id=department_id,
+            status=status,
         )
 
         created_order = create_purchase_order(
@@ -134,7 +149,7 @@ def update_existing_purchase_order(
     item_cost: float,
 ) -> dict:
     """
-    Update an existing purchase order.
+    Update an existing purchase order's item details.
 
     Use this tool only when the user explicitly requests
     updating a purchase order.
@@ -143,22 +158,21 @@ def update_existing_purchase_order(
     db = SessionLocal()
 
     try:
-        updated_purchase_order = PurchaseOrder(
-            item_name=item_name,
-            item_quantity=item_quantity,
-            item_id=item_id,
-            item_cost=item_cost,
-        )
+        # Only update the item fields; employee_id, department_id, status stay unchanged
+        existing = get_purchase_order_by_id(db=db, purchase_order_id=purchase_order_id)
+        if not existing:
+            return {"success": False, "message": "Purchase order not found"}
 
-        purchase_order = update_purchase_order(
-            db=db,
-            purchase_order_id=purchase_order_id,
-            updated_purchase_order=updated_purchase_order,
-        )
+        existing.item_name = item_name
+        existing.item_quantity = item_quantity
+        existing.item_id = item_id
+        existing.item_cost = item_cost
+        db.commit()
+        db.refresh(existing)
 
         return {
             "success": True,
-            "purchase_order_id": purchase_order.id,
+            "purchase_order_id": existing.id,
             "message": "Purchase order updated successfully.",
         }
 

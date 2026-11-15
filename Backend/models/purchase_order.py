@@ -10,6 +10,7 @@ class PurchaseOrder(Base):
     item_quantity = Column(Integer, nullable=False)
     item_cost = Column(Float, nullable=False)
     department_id = Column(Integer, ForeignKey('departments.id'), nullable=True)
+    vendor_name = Column(String(100), nullable=True)
     status = Column(String(20), nullable=False)
 
     def __repr__(self):

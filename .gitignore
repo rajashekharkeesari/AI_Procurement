@@ -13,3 +13,9 @@ dist/
 venv/
 Scripts/
 Lib/
+
+# Local databases
+*.db
+
+# Editor settings
+.vscode/

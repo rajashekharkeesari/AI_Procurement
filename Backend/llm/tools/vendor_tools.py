@@ -25,6 +25,7 @@ def vendor_to_dict(vendor: Vendors) -> dict:
         "id": vendor.id,
         "name": vendor.name,
         "contact_info": vendor.contact_info,
+        "stationary_id": vendor.stationary_id,
     }
 
 
@@ -107,12 +108,18 @@ def list_all_vendors() -> dict:
 def create_new_vendor(
     name: str,
     contact_info: str,
+    stationary_id: int,
 ) -> dict:
     """
     Create a new vendor.
 
     Use this tool only when the user clearly asks
     to add or create a vendor.
+
+    Parameters:
+    - name: vendor name
+    - contact_info: vendor contact information
+    - stationary_id: the stationary item ID this vendor supplies
     """
 
     if not name.strip():
@@ -133,6 +140,7 @@ def create_new_vendor(
         vendor = Vendors(
             name=name.strip(),
             contact_info=contact_info.strip(),
+            stationary_id=stationary_id,
         )
 
         created_vendor = create_vendor(
@@ -197,21 +205,15 @@ def update_existing_vendor(
                 "message": "Vendor not found",
             }
 
-        updated_vendor = Vendors(
-            name=name.strip(),
-            contact_info=contact_info.strip(),
-        )
-
-        vendor = update_vendor(
-            db=db,
-            vendor_id=vendor_id,
-            updated_vendor=updated_vendor,
-        )
+        existing_vendor.name = name.strip()
+        existing_vendor.contact_info = contact_info.strip()
+        db.commit()
+        db.refresh(existing_vendor)
 
         return {
             "success": True,
             "message": "Vendor updated successfully",
-            "vendor": vendor_to_dict(vendor),
+            "vendor": vendor_to_dict(existing_vendor),
         }
 
     except Exception as error:

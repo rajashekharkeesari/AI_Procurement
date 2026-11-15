@@ -1,9 +1,11 @@
 langgraph
+langgraph-checkpoint-sqlite
 fastapi
 uvicorn
 httpx
-pytest
-sqlite
 sqlalchemy
-http
-jose
+python-jose[cryptography]
+python-dotenv
+langchain
+langchain-core
+langchain-groq
